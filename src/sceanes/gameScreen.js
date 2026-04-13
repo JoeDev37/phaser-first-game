@@ -2,46 +2,68 @@ import Phaser from "phaser";
 
 export default class gameScreen extends Phaser.Scene {
 
+    init() {
+        this.poddrightVelocity = new Phaser.Math.Vector2(0, 0)
+    }
+
     preload() {
 
     }
 
     create() {
-        const ball = this.add.circle(400, 250, 10, 0xffffff, 1);
-        this.physics.add.existing(ball)
-        ball.body.setBounce(1, 1)
 
-        ball.body.setCollideWorldBounds(true, 1, 1)
+        this.ball = this.add.circle(400, 250, 10, 0xffffff, 1);
+        this.physics.add.existing(this.ball)
+        this.ball.body.setBounce(1, 1)
 
-        ball.body.setVelocity(-200, 0);
+        this.ball.body.setCollideWorldBounds(true, 1, 1)
 
-       const poddleft = this.add.rectangle(30, 243, 40, 100, 0xffffff, 1);
-       this.physics.add.existing(poddleft, true);
+        this.ball.body.setVelocity(Phaser.Math.Between(-200, 200), Phaser.Math.Between(-200, 200));
 
-       const poddright = this.add.rectangle(770, 243, 40, 100, 0xffffff, 1)
-       this.physics.add.existing(poddright, true);
+       this.poddleft = this.add.rectangle(30, 243, 40, 100, 0xffffff, 1);
+       this.physics.add.existing(this.poddleft, true);
 
-    //    this.physics.add.collider(poddleft, ball, poddright)
-        this.physics.add.collider(ball, poddleft);
-        this.physics.add.collider(ball, poddright);
+       this.poddright = this.add.rectangle(770, 243, 40, 100, 0xffffff, 1)
+       this.physics.add.existing(this.poddright, true);
 
+        this.physics.add.collider(this.ball, this.poddleft);
+        this.physics.add.collider(this.ball, this.poddright);
 
-        
+        this.cursors = this.input.keyboard.createCursorKeys()
+    }
 
-        
+    update() {
 
-        // ball.body.setBounce(1);
-        // ball.body.setCollideWorldBounds(true)
-        // ball.body.setAllowGravity(true)
+        const body = this.poddleft.body
 
+        if (this.cursors.up.isDown) {
+            this.poddleft.y -= 10;
+            body.updateFromGameObject();
+        } else if (this.cursors.down.isDown) {
+            this.poddleft.y += 10;
+            body.updateFromGameObject();
+        }
 
-        // const ground = this.physics.add.staticGroup()
-        
-        // const floor = this.add.rectangle(400, 500, 800, 20, 0xffffff);
-        // this.physics.add.existing(floor, true);
-        // floor.displayWidth = 800;
-        // floor.displayHeight = 20;
-        
-        // this.physics.add.collider(ball, ground)
+        const diff = this.ball.y - this.poddright.y
+
+        const speed = 2;
+
+        if (diff < 0) {
+            this.poddrightVelocity.y = -speed;
+
+            if (this.poddrightVelocity < -10) {
+                this.poddrightVelocity = -10
+            }
+
+        } else if (diff > 0) {
+            this.poddrightVelocity.y = speed;
+
+            if(this.poddrightVelocity > 10) {
+                this.poddrightVelocity = 10
+            }
+        }
+
+        this.poddright.y += this.poddrightVelocity.y;
+        this.poddright.body.updateFromGameObject()
     }
 }
